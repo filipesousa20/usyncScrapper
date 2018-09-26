@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -37,7 +38,15 @@ namespace uSyncScrapper
         private void ParseUSyncfilesToHtml(string folder)
         {
             var docTypes = ParseXMLFiles(folder);
-            GenerateHtml(docTypes);
+            var html = GenerateHtml(docTypes);
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Filter = "Html Files (*.html)|*.html";
+            dlg.DefaultExt = "html";
+            dlg.AddExtension = true;
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                File.WriteAllText(dlg.FileName, html);
+            }
         }
 
         private IEnumerable<DocumentType> ParseXMLFiles(string folder)
@@ -75,7 +84,7 @@ namespace uSyncScrapper
             return docTypes;
         }
 
-        private static void GenerateHtml(IEnumerable<DocumentType> docTypes)
+        private static string GenerateHtml(IEnumerable<DocumentType> docTypes)
         {
             string documentTypeFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Views", "DocumentType.cshtml");
             string finalDocumentFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Views", "FinalDocument.cshtml");
@@ -91,6 +100,8 @@ namespace uSyncScrapper
 
             var finalDocType = new FinalDocument { Body = body.ToString() };
             var finalDocument = templateService.Parse(File.ReadAllText(finalDocumentFilePath), finalDocType, null, "FinalDocument");
+
+            return WebUtility.HtmlDecode(finalDocument);
         }
     }
 }
