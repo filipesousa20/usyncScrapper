@@ -46,13 +46,31 @@ namespace uSyncScrapper
             string[] files = Directory.GetFiles(folder, "*.config", SearchOption.AllDirectories);
             foreach (var file in files)
             {
+                var docType = new DocumentType();
+                docTypes.Add(docType);
                 XDocument doc = XDocument.Load(file);
+
+                var name = doc
+                    .Root
+                    .Element("Info")
+                    .Element("Name")
+                    .Value;
+                docType.Name = name;
+
                 var description = doc
                     .Root
                     .Element("Info")
                     .Element("Description")
                     .Value;
-                docTypes.Add(new DocumentType { Description = description });
+                docType.Description = description;
+
+                var properties = doc
+                    .Root
+                    .Element("GenericProperties")
+                    .Elements("GenericProperty")
+                    .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value });
+                docType.Properties = properties;
+                
             }
             return docTypes;
         }

@@ -1,5 +1,9 @@
 ﻿@model uSyncScrapper.Models.DocumentType
 
-<p>
-    @Model.Description,
-</p>
+<h2>@Model.Name</h2>
+<h3>@Model.Description</h3>
+
+@foreach (var item in Model.Properties)
+{
+    <p><b>@item.Name</b>: @item.Text</p> 
+}
