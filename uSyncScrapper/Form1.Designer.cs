@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.buttonBrowseFolder = new System.Windows.Forms.Button();
             this.buttonScrap = new System.Windows.Forms.Button();
@@ -49,7 +50,7 @@
             // 
             this.buttonScrap.Location = new System.Drawing.Point(524, 58);
             this.buttonScrap.Name = "buttonScrap";
-            this.buttonScrap.Size = new System.Drawing.Size(75, 30);
+            this.buttonScrap.Size = new System.Drawing.Size(75, 38);
             this.buttonScrap.TabIndex = 1;
             this.buttonScrap.Text = "Scrap";
             this.buttonScrap.UseVisualStyleBackColor = true;
@@ -61,18 +62,19 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(468, 22);
             this.textBox1.TabIndex = 2;
-            this.textBox1.Text = "E:\\Projects\\Criton\\website\\Criton.Web\\uSync\\data\\DocumentType\\master";
+            this.textBox1.Text = "E:\\Projects\\Lowry\\website\\Lowry.Web\\uSync";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(611, 100);
+            this.ClientSize = new System.Drawing.Size(609, 109);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.buttonScrap);
             this.Controls.Add(this.buttonBrowseFolder);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "uSync Scrapper";
             this.ResumeLayout(false);
             this.PerformLayout();
 

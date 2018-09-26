@@ -52,39 +52,67 @@ namespace uSyncScrapper
         private IEnumerable<DocumentType> ParseUSyncFiles(string folder)
         {
             var docTypes = new List<DocumentType>();
-            string[] files = Directory.GetFiles(folder, "*.config", SearchOption.AllDirectories);
+            string documentTypeFolder = Directory
+                .GetDirectories(folder, "DocumentType", SearchOption.AllDirectories)
+                .First();
+            var pagesDirectory = Directory
+                .GetDirectories(documentTypeFolder, "master", SearchOption.AllDirectories)
+                .First();
+            var websiteSettingsDirectory = Directory
+                .GetDirectories(documentTypeFolder, "website-settings", SearchOption.AllDirectories)
+                .First();
+            var pages = Directory.GetFiles(pagesDirectory, "*.config", SearchOption.AllDirectories);
+            var websiteSettings = (Directory.GetFiles(websiteSettingsDirectory, "*.config", SearchOption.AllDirectories));
+            var files = websiteSettings.Union(pages);
+
             int index = 1;
             foreach (var file in files)
             {
-                var docType = new DocumentType();
-                XDocument doc = XDocument.Load(file);
+                try
+                {
+                    var docType = new DocumentType();
+                    XDocument doc = XDocument.Load(file);
 
-                var name = doc
-                    .Root
-                    .Element("Info")
-                    .Element("Name")
-                    .Value;
-                docType.Name = name;
+                    var name = doc
+                        .Root
+                        .Element("Info")
+                        .Element("Name")
+                        .Value;
+                    docType.Name = name.Replace("Website Settings", "Global Items");
 
-                var description = doc
-                    .Root
-                    .Element("Info")
-                    .Element("Description")
-                    .Value;
-                docType.Description = description;
+                    var description = doc
+                        .Root
+                        .Element("Info")
+                        .Element("Description")
+                        .Value;
+                    docType.Description = description;
 
-                var properties = doc
-                    .Root
-                    .Element("GenericProperties")
-                    .Elements("GenericProperty")
-                    .Where(i => !string.IsNullOrEmpty(i.Element("Description").Value))
-                    .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value });
-                docType.Properties = properties;
+                    var tabOrder = doc
+                        .Root
+                        .Element("Tabs")
+                        .Elements("Tab")
+                        .Select(i => new { Caption = i.Element("Caption").Value, Order = i.Element("SortOrder").Value })
+                        .OrderBy(i => int.Parse(i.Order))
+                        .ToList();
 
-                if (!docType.Properties.Any()) {continue;}
-                docTypes.Add(docType);
-                docType.Index = index;
-                index++;
+                    var properties = doc
+                        .Root
+                        .Element("GenericProperties")
+                        .Elements("GenericProperty")
+                        .Where(i => !string.IsNullOrEmpty(i.Element("Description").Value))
+                        .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value, Order = int.Parse(i.Element("SortOrder").Value) })
+                        .OrderBy(i => tabOrder.IndexOf(tabOrder.First(j => j.Caption == i.Tab)))
+                        .ThenBy(i => i.Order);
+                    docType.Properties = properties;
+
+                    if (!docType.Properties.Any()) { continue; }
+                    docTypes.Add(docType);
+                    docType.Index = index;
+                    index++;
+                }
+                catch (Exception ex)
+                {
+                }
             }
             return docTypes;
         }

@@ -7,13 +7,11 @@
 <h3><a name="@Model.Name">@Model.Index. @Model.Name</a></h3>
 <p>@Model.Description</p>
 
-<h4>Properties:</h4>
 @foreach (var item in Model.Properties)
 {
+    string text = item.Text;
+    text = text.TrimEnd('.');
     <h5>@Model.Index.@index. @item.Name</h5>
-    <ul>
-        <li>Can be set at the @item.Name property of the @item.Tab tab.</li>
-        <li>@item.Text</li>
-    </ul>
+    <p class="property">@text. Can be set at the '@item.Name' property of the '@item.Tab' tab.</p>
     index++;
 }
