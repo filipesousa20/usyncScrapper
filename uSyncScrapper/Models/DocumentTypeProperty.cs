@@ -13,7 +13,7 @@ namespace uSyncScrapper.Models
         public string Tab { get; set; }
         public int Order { get; set; }
         public string Type { get; set; }
-        public string Key { get; set; }
+        public string Definition { get; set; }
         public int MaxItems { get; set; }
     }
 }

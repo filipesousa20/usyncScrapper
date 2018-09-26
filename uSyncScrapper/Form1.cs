@@ -112,12 +112,14 @@ namespace uSyncScrapper
                         .Element("GenericProperties")
                         .Elements("GenericProperty")
                         .Where(i => !string.IsNullOrEmpty(i.Element("Description").Value))
-                        .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value, Order = int.Parse(i.Element("SortOrder").Value), Type = i.Element("Type").Value, Key = i.Element("Definition").Value })
+                        .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value, Order = int.Parse(i.Element("SortOrder").Value), Type = i.Element("Type").Value, Definition = i.Element("Definition").Value })
                         .OrderBy(i => tabOrder.IndexOf(tabOrder.First(j => j.Caption == i.Tab)))
                         .ThenBy(i => i.Order)
                         .ToList();
                     docType.Properties = properties;
-                    ComputeMaxItems(dataTypeDocuments, properties);
+
+                    ComputeNestedContentMaxItems(dataTypeDocuments, properties);
+                    ComputeTreePickerMaxItems(dataTypeDocuments, properties);
 
                     if (!docType.Properties.Any()) { continue; }
                     docTypes.Add(docType);
@@ -131,7 +133,7 @@ namespace uSyncScrapper
             return docTypes;
         }
 
-        private static void ComputeMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
+        private static void ComputeNestedContentMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
         {
             var nestedContentProperties = properties
                                     .Where(i => i.Type == "Umbraco.NestedContent");
@@ -141,7 +143,7 @@ namespace uSyncScrapper
                 var datatype = dataTypeDocuments.Where(i => i
                     .Root
                     .Attribute("Key")
-                    .Value == prop.Key).FirstOrDefault();
+                    .Value == prop.Definition).FirstOrDefault();
                 if (datatype != null)
                 {
                     var maxItems = datatype
@@ -149,6 +151,31 @@ namespace uSyncScrapper
                         .Element("PreValues")
                         .Elements("PreValue")
                         .FirstOrDefault(i => (string)i.Attribute("Alias") == "maxItems")
+                        .Value;
+                    var maxItemsDefault = 0;
+                    int.TryParse(maxItems, out maxItemsDefault);
+                    prop.MaxItems = maxItemsDefault;
+                }
+            }
+        }
+        private static void ComputeTreePickerMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
+        {
+            var treePickerProperties = properties
+                                    .Where(i => i.Type.StartsWith("Umbraco.MultiNodeTreePicker"));
+
+            foreach (var prop in treePickerProperties)
+            {
+                var datatype = dataTypeDocuments.Where(i => i
+                    .Root
+                    .Attribute("Key")
+                    .Value == prop.Definition).FirstOrDefault();
+                if (datatype != null)
+                {
+                    var maxItems = datatype
+                        .Root
+                        .Element("PreValues")
+                        .Elements("PreValue")
+                        .FirstOrDefault(i => (string)i.Attribute("Alias") == "maxNumber")
                         .Value;
                     var maxItemsDefault = 0;
                     int.TryParse(maxItems, out maxItemsDefault);

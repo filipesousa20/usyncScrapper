@@ -11,9 +11,11 @@
 {
     string text = item.Text;
     text = text.TrimEnd('.');
-    var maxItemsText = item.MaxItems > 0 ?
+    var maxItemsText = item.Type == "Umbraco.NestedContent" || item.Type.StartsWith("Umbraco.MultiNodeTreePicker") ?
+        (item.MaxItems > 0 ?
         string.Format("At most {0} {1} can be added.", item.MaxItems, item.Name) :
-        "There is no limit on the number of items that can be added.";
+        "There is no limit on the number of items that can be added.")
+        : "";
     <h5>@Model.Index.@index. @item.Name</h5>
     <p class="property">@text. @maxItemsText Can be set at the '@item.Name' property of the '@item.Tab' tab.</p>
     index++;
