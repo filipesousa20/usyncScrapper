@@ -7,26 +7,54 @@
     <meta charset="utf-8" />
     <title>Technical Documentation</title>
     <style>
-        h1{
-            text-align:center;
+        body, h1, h2, h3, h4, p {
+            font-family: Arial;
         }
-        p.date{
-            text-align:center;
+
+        body {
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            padding-top: 30px;
+        }
+
+        h3 {
+            background-color: #eee;
+            padding: 10px ;
+            margin-top:3em;
+        }
+
+        h5 {
+            font-size: 0.9em;
+            margin:0;
+        }
+
+        p.date {
+            text-align: center;
+            color: #999999;
         }
     </style>
 </head>
 <body>
-   
+
     <h1>Website Technical Documentation</h1>
     <p class="date">@DateTime.Now.Date.ToShortDateString()</p>
 
     <p>This document contains technical documentation of selected features.</p>
-    <p>Jump to relevant topic</p>
+    <h2>Index</h2>
 
-    @foreach (var item in Model.DocTypes)
-    {
-        <a href="#@item.Name">@item.Name</a> <br />
-    }
+    <ul>
+        @foreach (var item in Model.DocTypes)
+        {
+            <li><a href="#@item.Name">@item.Name</a></li>
+        }
+    </ul>
+    <h2>Pages</h2>
 
     @Model.Body
 

@@ -80,6 +80,7 @@ namespace uSyncScrapper
                     .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value });
                 docType.Properties = properties;
 
+                if (!docType.Properties.Any()) {continue;}
                 docTypes.Add(docType);
             }
             return docTypes;
