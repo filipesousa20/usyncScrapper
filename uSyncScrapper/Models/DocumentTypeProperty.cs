@@ -10,5 +10,6 @@ namespace uSyncScrapper.Models
     {
         public string Name { get; set; }
         public string Text { get; set; }
+        public string Tab { get; set; }
     }
 }

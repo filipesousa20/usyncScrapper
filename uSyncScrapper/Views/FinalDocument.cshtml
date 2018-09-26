@@ -5,10 +5,29 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>Welcome</title>
+    <title>Technical Documentation</title>
+    <style>
+        h1{
+            text-align:center;
+        }
+        p.date{
+            text-align:center;
+        }
+    </style>
 </head>
 <body>
    
+    <h1>Website Technical Documentation</h1>
+    <p class="date">@DateTime.Now.Date.ToShortDateString()</p>
+
+    <p>This document contains technical documentation of selected features.</p>
+    <p>Jump to relevant topic</p>
+
+    @foreach (var item in Model.DocTypes)
+    {
+        <a href="#@item.Name">@item.Name</a> <br />
+    }
+
     @Model.Body
 
 </body>

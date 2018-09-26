@@ -77,7 +77,7 @@ namespace uSyncScrapper
                     .Element("GenericProperties")
                     .Elements("GenericProperty")
                     .Where(i => !string.IsNullOrEmpty(i.Element("Description").Value))
-                    .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value });
+                    .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value });
                 docType.Properties = properties;
 
                 docTypes.Add(docType);
@@ -99,7 +99,7 @@ namespace uSyncScrapper
                 body.Append(templateService.Parse(File.ReadAllText(documentTypeFilePath), docType, null, "DocumentType"));
             }
 
-            var finalDocType = new FinalDocument { Body = body.ToString() };
+            var finalDocType = new FinalDocument { Body = body.ToString(), DocTypes = docTypes };
             var finalDocument = templateService.Parse(File.ReadAllText(finalDocumentFilePath), finalDocType, null, "FinalDocument");
 
             return WebUtility.HtmlDecode(finalDocument);

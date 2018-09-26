@@ -9,5 +9,6 @@ namespace uSyncScrapper.Models
     public class FinalDocument
     {
         public string Body { get; set; }
+        public IEnumerable<DocumentType> DocTypes { get; set; }
     }
 }
