@@ -37,7 +37,7 @@ namespace uSyncScrapper
 
         private void ParseUSyncfilesToHtml(string folder)
         {
-            var docTypes = ParseXMLFiles(folder);
+            var docTypes = ParseUSyncFiles(folder);
             var html = GenerateHtml(docTypes);
             SaveFileDialog dlg = new SaveFileDialog();
             dlg.Filter = "Html Files (*.html)|*.html";
@@ -49,14 +49,13 @@ namespace uSyncScrapper
             }
         }
 
-        private IEnumerable<DocumentType> ParseXMLFiles(string folder)
+        private IEnumerable<DocumentType> ParseUSyncFiles(string folder)
         {
             var docTypes = new List<DocumentType>();
             string[] files = Directory.GetFiles(folder, "*.config", SearchOption.AllDirectories);
             foreach (var file in files)
             {
                 var docType = new DocumentType();
-                docTypes.Add(docType);
                 XDocument doc = XDocument.Load(file);
 
                 var name = doc
@@ -77,9 +76,11 @@ namespace uSyncScrapper
                     .Root
                     .Element("GenericProperties")
                     .Elements("GenericProperty")
+                    .Where(i => !string.IsNullOrEmpty(i.Element("Description").Value))
                     .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value });
                 docType.Properties = properties;
-                
+
+                docTypes.Add(docType);
             }
             return docTypes;
         }
