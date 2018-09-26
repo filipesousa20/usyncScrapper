@@ -8,6 +8,7 @@ namespace uSyncScrapper.Models
 {
     public class DocumentType
     {
+        public int Index { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public IEnumerable<DocumentTypeProperty> Properties { get; set; }

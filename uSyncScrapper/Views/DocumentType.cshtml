@@ -1,14 +1,19 @@
 ﻿@model uSyncScrapper.Models.DocumentType
 
-<h3><a name="@Model.Name">@Model.Name</a></h3>
+@{ 
+    var index = 1;
+}
+
+<h3><a name="@Model.Name">@Model.Index. @Model.Name</a></h3>
 <p>@Model.Description</p>
 
 <h4>Properties:</h4>
 @foreach (var item in Model.Properties)
 {
-    <h5>@item.Name</h5>
+    <h5>@Model.Index.@index. @item.Name</h5>
     <ul>
         <li>Can be set at the @item.Name property of the @item.Tab tab.</li>
         <li>@item.Text</li>
     </ul>
+    index++;
 }

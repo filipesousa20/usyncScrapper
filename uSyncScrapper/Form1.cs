@@ -53,6 +53,7 @@ namespace uSyncScrapper
         {
             var docTypes = new List<DocumentType>();
             string[] files = Directory.GetFiles(folder, "*.config", SearchOption.AllDirectories);
+            int index = 1;
             foreach (var file in files)
             {
                 var docType = new DocumentType();
@@ -82,6 +83,8 @@ namespace uSyncScrapper
 
                 if (!docType.Properties.Any()) {continue;}
                 docTypes.Add(docType);
+                docType.Index = index;
+                index++;
             }
             return docTypes;
         }
