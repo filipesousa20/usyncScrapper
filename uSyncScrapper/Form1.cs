@@ -65,6 +65,18 @@ namespace uSyncScrapper
             var websiteSettings = (Directory.GetFiles(websiteSettingsDirectory, "*.config", SearchOption.AllDirectories));
             var files = websiteSettings.Union(pages);
 
+            //datatypes
+            string datatypeFolder = Directory
+                        .GetDirectories(folder, "DataType", SearchOption.AllDirectories)
+                        .First();
+            var datatypeFiles = Directory.GetFiles(datatypeFolder, "*.config", SearchOption.AllDirectories);
+
+            var dataTypeDocuments = new List<XDocument>();
+            foreach (var datatypeFile in datatypeFiles)
+            {
+                dataTypeDocuments.Add(XDocument.Load(datatypeFile));
+            }
+
             int index = 1;
             foreach (var file in files)
             {
@@ -100,10 +112,12 @@ namespace uSyncScrapper
                         .Element("GenericProperties")
                         .Elements("GenericProperty")
                         .Where(i => !string.IsNullOrEmpty(i.Element("Description").Value))
-                        .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value, Order = int.Parse(i.Element("SortOrder").Value) })
+                        .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value, Order = int.Parse(i.Element("SortOrder").Value), Type = i.Element("Type").Value, Key = i.Element("Definition").Value })
                         .OrderBy(i => tabOrder.IndexOf(tabOrder.First(j => j.Caption == i.Tab)))
-                        .ThenBy(i => i.Order);
+                        .ThenBy(i => i.Order)
+                        .ToList();
                     docType.Properties = properties;
+                    ComputeMaxItems(dataTypeDocuments, properties);
 
                     if (!docType.Properties.Any()) { continue; }
                     docTypes.Add(docType);
@@ -115,6 +129,32 @@ namespace uSyncScrapper
                 }
             }
             return docTypes;
+        }
+
+        private static void ComputeMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
+        {
+            var nestedContentProperties = properties
+                                    .Where(i => i.Type == "Umbraco.NestedContent");
+
+            foreach (var prop in nestedContentProperties)
+            {
+                var datatype = dataTypeDocuments.Where(i => i
+                    .Root
+                    .Attribute("Key")
+                    .Value == prop.Key).FirstOrDefault();
+                if (datatype != null)
+                {
+                    var maxItems = datatype
+                        .Root
+                        .Element("PreValues")
+                        .Elements("PreValue")
+                        .FirstOrDefault(i => (string)i.Attribute("Alias") == "maxItems")
+                        .Value;
+                    var maxItemsDefault = 0;
+                    int.TryParse(maxItems, out maxItemsDefault);
+                    prop.MaxItems = maxItemsDefault;
+                }
+            }
         }
 
         private static string GenerateHtml(IEnumerable<DocumentType> docTypes)
