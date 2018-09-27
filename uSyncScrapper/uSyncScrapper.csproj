@@ -78,6 +78,7 @@
     <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\DocumentTypeProperty.cs" />
     <Compile Include="Models\FinalDocument.cs" />
+    <Compile Include="Models\Tab.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">

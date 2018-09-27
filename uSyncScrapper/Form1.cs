@@ -51,6 +51,7 @@ namespace uSyncScrapper
 
         private IEnumerable<DocumentType> ParseUSyncFiles(string folder)
         {
+            //pages
             var docTypes = new List<DocumentType>();
             string documentTypeFolder = Directory
                 .GetDirectories(folder, "DocumentType", SearchOption.AllDirectories)
@@ -77,6 +78,17 @@ namespace uSyncScrapper
                 dataTypeDocuments.Add(XDocument.Load(datatypeFile));
             }
 
+            //compositions
+            var compositionsFolder = Directory
+                .GetDirectories(documentTypeFolder, "compositions", SearchOption.AllDirectories)
+                .First();
+            var compositionsFiles = Directory.GetFiles(compositionsFolder, "*.config", SearchOption.AllDirectories);
+            var allCompositionsDocuments = new List<XDocument>();
+            foreach (var compositionsFile in compositionsFiles)
+            {
+                allCompositionsDocuments.Add(XDocument.Load(compositionsFile));
+            }
+
             int index = 1;
             foreach (var file in files)
             {
@@ -99,27 +111,25 @@ namespace uSyncScrapper
                         .Value;
                     docType.Description = description;
 
-                    var tabOrder = doc
-                        .Root
-                        .Element("Tabs")
-                        .Elements("Tab")
-                        .Select(i => new { Caption = i.Element("Caption").Value, Order = i.Element("SortOrder").Value })
-                        .OrderBy(i => int.Parse(i.Order))
-                        .ToList();
+                    var compositionsDocuments = GetCompositions(allCompositionsDocuments, doc);
 
-                    var properties = doc
-                        .Root
-                        .Element("GenericProperties")
-                        .Elements("GenericProperty")
-                        .Where(i => !string.IsNullOrEmpty(i.Element("Description").Value))
-                        .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value, Order = int.Parse(i.Element("SortOrder").Value), Type = i.Element("Type").Value, Definition = i.Element("Definition").Value })
-                        .OrderBy(i => tabOrder.IndexOf(tabOrder.First(j => j.Caption == i.Tab)))
+                    var allTabs = new List<Tab>();
+                    allTabs.AddRange(GetTabs(doc));
+                    allTabs.AddRange(GetCompositionsTabs(compositionsDocuments));
+                    allTabs = allTabs.OrderBy(i => i.Order).ToList();
+
+                    var allProperties = new List<DocumentTypeProperty>();
+                    allProperties.AddRange(GetCompositionsProperties(compositionsDocuments, doc));
+                    allProperties.AddRange(GetDocumentProperties(doc));
+
+                    allProperties = allProperties
+                        .OrderBy(p => allTabs.IndexOf(allTabs.First(t => t.Caption == p.Tab)))
                         .ThenBy(i => i.Order)
                         .ToList();
-                    docType.Properties = properties;
+                    docType.Properties = allProperties;
 
-                    ComputeNestedContentMaxItems(dataTypeDocuments, properties);
-                    ComputeTreePickerMaxItems(dataTypeDocuments, properties);
+                    ComputeNestedContentMaxItems(dataTypeDocuments, allProperties);
+                    ComputeTreePickerMaxItems(dataTypeDocuments, allProperties);
 
                     if (!docType.Properties.Any()) { continue; }
                     docTypes.Add(docType);
@@ -131,6 +141,65 @@ namespace uSyncScrapper
                 }
             }
             return docTypes;
+        }
+
+        private IEnumerable<Tab> GetCompositionsTabs(IEnumerable<XDocument> compositions)
+        {
+            var tabs = new List<Tab>();
+            foreach (var comp in compositions)
+            {
+                tabs.AddRange(GetTabs(comp));
+            }
+            return tabs;
+        }
+
+        private static IEnumerable<Tab> GetTabs(XDocument doc)
+        {
+            return doc
+                .Root
+                .Element("Tabs")
+                .Elements("Tab")
+                .Select(i => new Tab { Caption = i.Element("Caption").Value, Order = int.Parse(i.Element("SortOrder").Value) });
+        }
+
+        private static IEnumerable<XDocument> GetCompositions(List<XDocument> compositionsDocuments, XDocument doc)
+        {
+            var compositions = doc
+                                   .Root
+                                   .Element("Info")
+                                   .Element("Compositions")
+                                   .Elements("Composition")
+                                   .Select(i => (string)i.Attribute("Key"))
+                                   .Select(i => compositionsDocuments.Where(j => j
+                                    .Root
+                                    .Element("Info")
+                                    .Element("Key")
+                                    .Value == i).FirstOrDefault())
+                                    .Where(c => c != null);
+            return compositions;
+        }
+
+        private static IEnumerable<DocumentTypeProperty> GetCompositionsProperties(IEnumerable<XDocument> compositionsDocuments, XDocument doc)
+        {
+            var allProperties = new List<DocumentTypeProperty>();
+            foreach (var comp in compositionsDocuments)
+            {
+                if (comp != null)
+                {
+                    allProperties.AddRange(GetDocumentProperties(comp));
+                }
+            }
+            return allProperties;
+        }
+
+        private static IEnumerable<DocumentTypeProperty> GetDocumentProperties(XDocument doc)
+        {
+            return doc
+                                    .Root
+                                    .Element("GenericProperties")
+                                    .Elements("GenericProperty")
+                                    .Where(i => !string.IsNullOrEmpty(i.Element("Description").Value))
+                                    .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value, Order = int.Parse(i.Element("SortOrder").Value), Type = i.Element("Type").Value, Definition = i.Element("Definition").Value });
         }
 
         private static void ComputeNestedContentMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
@@ -158,6 +227,7 @@ namespace uSyncScrapper
                 }
             }
         }
+
         private static void ComputeTreePickerMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
         {
             var treePickerProperties = properties
