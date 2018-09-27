@@ -17,6 +17,7 @@ namespace uSyncScrapper
 {
     public partial class Form1 : Form
     {
+        private string[] compositionAliasToIgnore = new string[] { "seo", "visibility", "redirect" };
         public Form1()
         {
             InitializeComponent();
@@ -51,6 +52,8 @@ namespace uSyncScrapper
 
         private IEnumerable<DocumentType> ParseUSyncFiles(string folder)
         {
+
+
             //pages
             var docTypes = new List<DocumentType>();
             string documentTypeFolder = Directory
@@ -153,7 +156,7 @@ namespace uSyncScrapper
             return tabs;
         }
 
-        private static IEnumerable<Tab> GetTabs(XDocument doc)
+        private IEnumerable<Tab> GetTabs(XDocument doc)
         {
             return doc
                 .Root
@@ -162,24 +165,29 @@ namespace uSyncScrapper
                 .Select(i => new Tab { Caption = i.Element("Caption").Value, Order = int.Parse(i.Element("SortOrder").Value) });
         }
 
-        private static IEnumerable<XDocument> GetCompositions(List<XDocument> compositionsDocuments, XDocument doc)
+        private IEnumerable<XDocument> GetCompositions(List<XDocument> compositionsDocuments, XDocument doc)
         {
             var compositions = doc
-                                   .Root
-                                   .Element("Info")
-                                   .Element("Compositions")
-                                   .Elements("Composition")
-                                   .Select(i => (string)i.Attribute("Key"))
-                                   .Select(i => compositionsDocuments.Where(j => j
-                                    .Root
-                                    .Element("Info")
-                                    .Element("Key")
-                                    .Value == i).FirstOrDefault())
-                                    .Where(c => c != null);
+                    .Root
+                    .Element("Info")
+                    .Element("Compositions")
+                    .Elements("Composition")
+                    .Select(i => (string)i.Attribute("Key"))
+                    .Select(i => compositionsDocuments.Where(j => j
+                        .Root
+                        .Element("Info")
+                        .Element("Key")
+                        .Value == i).FirstOrDefault())
+                    .Where(c => c != null)
+                    .Where(c => !compositionAliasToIgnore.Contains(c
+                        .Root
+                        .Element("Info")
+                        .Element("Alias")
+                        .Value));
             return compositions;
         }
 
-        private static IEnumerable<DocumentTypeProperty> GetCompositionsProperties(IEnumerable<XDocument> compositionsDocuments, XDocument doc)
+        private IEnumerable<DocumentTypeProperty> GetCompositionsProperties(IEnumerable<XDocument> compositionsDocuments, XDocument doc)
         {
             var allProperties = new List<DocumentTypeProperty>();
             foreach (var comp in compositionsDocuments)
@@ -192,17 +200,18 @@ namespace uSyncScrapper
             return allProperties;
         }
 
-        private static IEnumerable<DocumentTypeProperty> GetDocumentProperties(XDocument doc)
+        private IEnumerable<DocumentTypeProperty> GetDocumentProperties(XDocument doc)
         {
-            return doc
-                                    .Root
-                                    .Element("GenericProperties")
-                                    .Elements("GenericProperty")
-                                    .Where(i => !string.IsNullOrEmpty(i.Element("Description").Value))
-                                    .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value, Order = int.Parse(i.Element("SortOrder").Value), Type = i.Element("Type").Value, Definition = i.Element("Definition").Value });
+            var properties = doc
+                    .Root
+                    .Element("GenericProperties")
+                    .Elements("GenericProperty")
+                    .Where(i => checkBoxIncludePropertiesWithoutDescription.Checked ? true : !string.IsNullOrEmpty(i.Element("Description").Value))
+                    .Select(i => new DocumentTypeProperty { Name = i.Element("Name").Value, Text = i.Element("Description").Value, Tab = i.Element("Tab").Value, Order = int.Parse(i.Element("SortOrder").Value), Type = i.Element("Type").Value, Definition = i.Element("Definition").Value });
+            return properties;
         }
 
-        private static void ComputeNestedContentMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
+        private void ComputeNestedContentMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
         {
             var nestedContentProperties = properties
                                     .Where(i => i.Type == "Umbraco.NestedContent");
@@ -228,7 +237,7 @@ namespace uSyncScrapper
             }
         }
 
-        private static void ComputeTreePickerMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
+        private void ComputeTreePickerMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
         {
             var treePickerProperties = properties
                                     .Where(i => i.Type.StartsWith("Umbraco.MultiNodeTreePicker"));
@@ -254,7 +263,7 @@ namespace uSyncScrapper
             }
         }
 
-        private static string GenerateHtml(IEnumerable<DocumentType> docTypes)
+        private string GenerateHtml(IEnumerable<DocumentType> docTypes)
         {
             string documentTypeFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Views", "DocumentType.cshtml");
             string finalDocumentFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Views", "FinalDocument.cshtml");

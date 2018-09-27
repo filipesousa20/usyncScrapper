@@ -33,6 +33,7 @@
             this.buttonBrowseFolder = new System.Windows.Forms.Button();
             this.buttonScrap = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.checkBoxIncludePropertiesWithoutDescription = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // buttonBrowseFolder
@@ -48,7 +49,7 @@
             // 
             // buttonScrap
             // 
-            this.buttonScrap.Location = new System.Drawing.Point(524, 58);
+            this.buttonScrap.Location = new System.Drawing.Point(524, 62);
             this.buttonScrap.Name = "buttonScrap";
             this.buttonScrap.Size = new System.Drawing.Size(75, 38);
             this.buttonScrap.TabIndex = 1;
@@ -64,11 +65,24 @@
             this.textBox1.TabIndex = 2;
             this.textBox1.Text = "E:\\Projects\\Lowry\\website\\Lowry.Web\\uSync";
             // 
+            // checkBoxIncludePropertiesWithoutDescription
+            // 
+            this.checkBoxIncludePropertiesWithoutDescription.AutoSize = true;
+            this.checkBoxIncludePropertiesWithoutDescription.Checked = true;
+            this.checkBoxIncludePropertiesWithoutDescription.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxIncludePropertiesWithoutDescription.Location = new System.Drawing.Point(12, 44);
+            this.checkBoxIncludePropertiesWithoutDescription.Name = "checkBoxIncludePropertiesWithoutDescription";
+            this.checkBoxIncludePropertiesWithoutDescription.Size = new System.Drawing.Size(264, 21);
+            this.checkBoxIncludePropertiesWithoutDescription.TabIndex = 3;
+            this.checkBoxIncludePropertiesWithoutDescription.Text = "Include properties without description";
+            this.checkBoxIncludePropertiesWithoutDescription.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(609, 109);
+            this.Controls.Add(this.checkBoxIncludePropertiesWithoutDescription);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.buttonScrap);
             this.Controls.Add(this.buttonBrowseFolder);
@@ -86,6 +100,7 @@
         private System.Windows.Forms.Button buttonBrowseFolder;
         private System.Windows.Forms.Button buttonScrap;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.CheckBox checkBoxIncludePropertiesWithoutDescription;
     }
 }
 
