@@ -18,6 +18,9 @@ namespace uSyncScrapper
     public partial class Form1 : Form
     {
         private string[] compositionAliasToIgnore = new string[] { "seo", "visibility", "redirect" };
+
+        private string[] docTypesToIgnore = new string[] { "errorPage" };
+
         public Form1()
         {
             InitializeComponent();
@@ -105,6 +108,14 @@ namespace uSyncScrapper
                         .Element("Info")
                         .Element("Name")
                         .Value;
+
+                    var alias = doc
+                       .Root
+                       .Element("Info")
+                       .Element("Alias")
+                       .Value;
+                    if (docTypesToIgnore.Any(i => i.Contains(alias))) {continue;}
+
                     docType.Name = name.Replace("Website Settings", "Global Items");
 
                     var description = doc
