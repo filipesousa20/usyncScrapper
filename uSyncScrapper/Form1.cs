@@ -63,10 +63,10 @@ namespace uSyncScrapper
                 .GetDirectories(folder, "DocumentType", SearchOption.AllDirectories)
                 .First();
             var pagesDirectory = Directory
-                .GetDirectories(documentTypeFolder, "master", SearchOption.AllDirectories)
+                .GetDirectories(documentTypeFolder, "*master*", SearchOption.AllDirectories)
                 .First();
             var websiteSettingsDirectory = Directory
-                .GetDirectories(documentTypeFolder, "website-settings", SearchOption.AllDirectories)
+                .GetDirectories(documentTypeFolder, "*website-settings*", SearchOption.AllDirectories)
                 .First();
             var pages = Directory.GetFiles(pagesDirectory, "*.config", SearchOption.AllDirectories);
             var websiteSettings = (Directory.GetFiles(websiteSettingsDirectory, "*.config", SearchOption.AllDirectories));
