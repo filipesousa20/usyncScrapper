@@ -1,11 +1,8 @@
 ﻿@model uSyncScrapper.Models.DocumentType
-
-@{
-    var index = 1;
-}
+@using uSyncScrapper.Models
 
 <h3><a name="@Model.Name">@Model.Name</a> <span class="grey">doctype and template</span></h3>
-<p>@Model.Description</p>
+<p>@Model.Description <a href="http://www.example.com">Example here</a>.</p>
 
 <h4>Structure:</h4>
 <ul>
@@ -36,20 +33,34 @@
 </ul>
 
 <h4>Properties:</h4>
-
+<p>The following are the doctype properties grouped by their respective tab.</p>
 <ul>
-    @foreach (var item in Model.Properties)
-    {
-        string text = item.Text;
-        text = text.TrimEnd('.') + (string.IsNullOrEmpty(text) ? "" : ".");
-        var maxItemsText = item.Type == "Umbraco.NestedContent" || item.Type.StartsWith("Umbraco.MultiNodeTreePicker") ?
-            (item.MaxItems > 0 ?
-            string.Format("At most {0} '{1}' can be added.", item.MaxItems, item.Name) :
-            "There is no limit on the number of items that can be added.")
-            : "";
-        <li>
-            <span class="property-title">@item.Name:</span> @text @maxItemsText Can be set at the '@item.Name' property of the '@item.Tab' tab.
-        </li>
-        index++;
+    @{
+        var groupedProperties = from p in Model.Properties
+                                 group p by p.Tab into g
+                                 select new TabGroupedProperties { Tab = g.Key, Properties = g.ToList() };
+
+        foreach (var gp in groupedProperties)
+        {
+            <li class="doctype-tab">
+                <span>@gp.Tab</span> tab:
+                <ul>
+                    @foreach (var item in gp.Properties)
+                    {
+                        string text = item.Text;
+                        text = text.TrimEnd('.') + (string.IsNullOrEmpty(text) ? "" : ".");
+                        var maxItemsText = item.Type == "Umbraco.NestedContent" || item.Type.StartsWith("Umbraco.MultiNodeTreePicker") ?
+                        (item.MaxItems > 0 ?
+                        string.Format("At most {0} '{1}' can be added.", item.MaxItems, item.Name) :
+                        "There is no limit on the number of items that can be added.")
+                        : "";
+
+                        <li>
+                            <span class="property-title">@item.Name:</span> @text @maxItemsText
+                        </li>
+                    }
+                </ul>
+            </li>
+        }
     }
 </ul>

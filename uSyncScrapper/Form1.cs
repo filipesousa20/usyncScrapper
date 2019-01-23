@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using uSyncScrapper.Extensions;
 using uSyncScrapper.Models;
 
 namespace uSyncScrapper
@@ -69,6 +70,13 @@ namespace uSyncScrapper
                 .GetDirectories(documentTypeFolder, "*website-settings*", SearchOption.AllDirectories)
                 .First();
             var pages = Directory.GetFiles(pagesDirectory, "*.config", SearchOption.AllDirectories);
+
+            //show home pages first
+            pages = pages.Select(p => new { page = p, sort = p.Contains("home", StringComparison.OrdinalIgnoreCase) ? 1 : 0 })
+                .OrderByDescending(p => p.sort)
+                .Select(p => p.page)
+                .ToArray();
+
             var websiteSettings = (Directory.GetFiles(websiteSettingsDirectory, "*.config", SearchOption.AllDirectories));
             var files = websiteSettings.Union(pages);
 
