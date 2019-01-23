@@ -6,18 +6,36 @@
 
 <h3><a name="@Model.Name">@Model.Name</a> <span class="grey">doctype and template</span></h3>
 <p>@Model.Description</p>
-<p>
-    <span class="property-title">Allowed child doctypes:</span> 
-    @foreach (var child in Model.ChildDocTypes)
-    {
-        var text = child + ", ";
-        @text
-    }
-    @if (!Model.ChildDocTypes.Any())
-    {
-        <text>none</text>
-    }
-</p>
+
+<h4>Structure:</h4>
+<ul>
+    <li>
+        <span class="property-title">Allowed parent doctypes:</span>
+        @foreach (var parent in Model.ParentDocTypes)
+        {
+            var text = parent + ", ";
+            @text
+        }
+        @if (!Model.ParentDocTypes.Any())
+        {
+            <text>none</text>
+        }
+    </li>
+    <li>
+        <span class="property-title">Allowed child doctypes:</span>
+        @foreach (var child in Model.ChildDocTypes)
+        {
+            var text = child + ", ";
+            @text
+        }
+        @if (!Model.ChildDocTypes.Any())
+        {
+            <text>none</text>
+        }
+    </li>
+</ul>
+
+<h4>Properties:</h4>
 
 @foreach (var item in Model.Properties)
 {
