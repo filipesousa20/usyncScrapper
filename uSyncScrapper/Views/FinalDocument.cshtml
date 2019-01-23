@@ -26,8 +26,9 @@
 
         h3 {
             background-color: #eee;
-            padding: 10px ;
-            margin-top:3em;
+            padding: 10px;
+            margin-top: 3em;
+            margin-left: -10px;
         }
 
         h5 {
@@ -45,6 +46,9 @@
         .grey {
             color:lightgrey;
         }
+        .property-title {
+            font-weight:bold;
+        }
     </style>
 </head>
 <body>
@@ -58,11 +62,10 @@
     <ul>
         @foreach (var item in Model.DocTypes)
         {
-            <li><a href="#@item.Name">@item.Index. @item.Name</a></li>
+            <li><a href="#@item.Name">@item.Name</a></li>
         }
     </ul>
-    <h2>Pages</h2>
-
+    <h2>Document types and templates</h2>
     @Model.Body
 
 </body>

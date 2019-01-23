@@ -108,15 +108,22 @@ namespace uSyncScrapper
                         .Element("Info")
                         .Element("Name")
                         .Value;
+                    docType.Name = name;
 
                     var alias = doc
                        .Root
                        .Element("Info")
                        .Element("Alias")
                        .Value;
-                    if (docTypesToIgnore.Any(i => i.Contains(alias))) {continue;}
+                    docType.Alias = alias;
+                    if (docTypesToIgnore.Any(i => i == alias)) {continue;}
 
-                    docType.Name = name;
+                    var childDocTypes = doc
+                        .Root
+                        .Element("Structure")
+                        .Elements("DocumentType")
+                        .Select(i => i.Value);
+                    docType.ChildDocTypes = childDocTypes;
 
                     var description = doc
                         .Root
@@ -154,6 +161,22 @@ namespace uSyncScrapper
                 {
                 }
             }
+
+            // move child doc types alias to names
+            foreach (var docType in docTypes)
+            {
+                var childDocTypesNames = new List<string>();
+                foreach (var childAlias in docType.ChildDocTypes)
+                {
+                    var name = docTypes.FirstOrDefault(i => i.Alias == childAlias)?.Name;
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        childDocTypesNames.Add(name);
+                    }
+                }
+                docType.ChildDocTypes = childDocTypesNames;
+            }
+
             return docTypes;
         }
 

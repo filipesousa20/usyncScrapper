@@ -4,8 +4,20 @@
     var index = 1;
 }
 
-<h3><a name="@Model.Name">@Model.Index. @Model.Name</a> <span class="grey">doctype and template</span></h3>
+<h3><a name="@Model.Name">@Model.Name</a> <span class="grey">doctype and template</span></h3>
 <p>@Model.Description</p>
+<p>
+    <span class="property-title">Allowed child doctypes:</span> 
+    @foreach (var child in Model.ChildDocTypes)
+    {
+        var text = child + ", ";
+        @text
+    }
+    @if (!Model.ChildDocTypes.Any())
+    {
+        <text>none</text>
+    }
+</p>
 
 @foreach (var item in Model.Properties)
 {
@@ -16,7 +28,7 @@
         string.Format("At most {0} '{1}' can be added.", item.MaxItems, item.Name) :
         "There is no limit on the number of items that can be added.")
         : "";
-    <h5>@Model.Index.@index. @item.Name</h5>
+    <h5>@item.Name</h5>
     <p class="property">@text @maxItemsText Can be set at the '@item.Name' property of the '@item.Tab' tab.</p>
     index++;
 }
