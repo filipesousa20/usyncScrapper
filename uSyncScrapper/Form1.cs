@@ -162,12 +162,16 @@ namespace uSyncScrapper
                 }
             }
 
-            // move child doc types alias to names
+            // figure out parent doc types
             foreach (var docType in docTypes)
             {
                 var parentDocTypes = docTypes.Where(i => i.ChildDocTypes.Contains(docType.Alias));
                 docType.ParentDocTypes = parentDocTypes.Select(i => i.Name).ToList();
+            }
 
+            // move child doc types alias to names
+            foreach (var docType in docTypes)
+            {
                 var childDocTypesNames = new List<string>();
                 foreach (var childAlias in docType.ChildDocTypes)
                 {
