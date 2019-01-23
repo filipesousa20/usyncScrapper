@@ -116,7 +116,7 @@ namespace uSyncScrapper
                        .Value;
                     if (docTypesToIgnore.Any(i => i.Contains(alias))) {continue;}
 
-                    docType.Name = name.Replace("Website Settings", "Global Items");
+                    docType.Name = name;
 
                     var description = doc
                         .Root
