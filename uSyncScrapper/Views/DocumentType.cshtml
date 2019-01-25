@@ -6,40 +6,44 @@
     var groupedProperties = from p in Model.Properties
                             group p by p.Tab into g
                             select new TabGroupedProperties { Tab = g.Key, Properties = g.ToList() };
+    var lastParentDoctype = Model.ParentDocTypes.LastOrDefault();
+    var lastChildDoctype = Model.ChildDocTypes.LastOrDefault();
 }
 
 <h3><a name="@Model.Name">@Model.Name</a> <span class="grey">doctype and template</span></h3>
 <p>@Model.Description <a href="http://www.example.com">Example here</a>.</p>
 
-<h4>Structure:</h4>
+<br />
+<span class="property-title">Structure:</span>
 <ul>
     <li>
         <span class="property-title">Allowed parent doctypes:</span>
         @foreach (var parent in Model.ParentDocTypes)
         {
-            var text = parent + ", ";
+            var text = parent + (parent != lastParentDoctype ? ", " : ".");
             @text
         }
         @if (!Model.ParentDocTypes.Any())
         {
-            <text>none</text>
+            <text>none.</text>
         }
     </li>
     <li>
         <span class="property-title">Allowed child doctypes:</span>
         @foreach (var child in Model.ChildDocTypes)
         {
-            var text = child + ", ";
+            var text = child + (child != lastChildDoctype ? ", " : ".");
             @text
         }
         @if (!Model.ChildDocTypes.Any())
         {
-            <text>none</text>
+            <text>none.</text>
         }
     </li>
 </ul>
 
-<h4>Properties:</h4>
+<br />
+<span class="property-title">Properties:</span>
 
 <ul>
     @foreach (var gp in groupedProperties)
@@ -71,10 +75,10 @@
                             {
                                 var alias = dt.Alias.SplitCamelCase().FirstCharToUpper();
                                 <li>
-                                    <span class="property-title">@alias</span> has the following properties:
+                                    <span class="property-title">@alias</span> with the following properties:
                                     @if (dt.Properties != null && dt.Properties.Any())
                                     {
-                                        
+
                                         <ul>
                                             @foreach (var p in dt.Properties)
                                             {
