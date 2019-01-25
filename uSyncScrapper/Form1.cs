@@ -1,14 +1,12 @@
-﻿using RazorEngine.Templating;
+﻿using Newtonsoft.Json;
+using RazorEngine.Templating;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using uSyncScrapper.Extensions;
@@ -69,7 +67,11 @@ namespace uSyncScrapper
             var websiteSettingsDirectory = Directory
                 .GetDirectories(documentTypeFolder, "*website-settings*", SearchOption.AllDirectories)
                 .First();
+            var nestedContentDirectory = Directory
+                .GetDirectories(documentTypeFolder, "*nested-content*", SearchOption.AllDirectories)
+                .First();
             var pages = Directory.GetFiles(pagesDirectory, "*.config", SearchOption.AllDirectories);
+            var nestedContent = Directory.GetFiles(nestedContentDirectory, "*.config", SearchOption.AllDirectories);
 
             //show home pages first
             pages = pages.Select(p => new { page = p, sort = p.Contains("home", StringComparison.OrdinalIgnoreCase) ? 1 : 0 })
@@ -78,7 +80,7 @@ namespace uSyncScrapper
                 .ToArray();
 
             var websiteSettings = (Directory.GetFiles(websiteSettingsDirectory, "*.config", SearchOption.AllDirectories));
-            var files = websiteSettings.Union(pages);
+            var files = websiteSettings.Union(pages).Union(nestedContent);
 
             //datatypes
             string datatypeFolder = Directory
@@ -124,7 +126,7 @@ namespace uSyncScrapper
                        .Element("Alias")
                        .Value;
                     docType.Alias = alias;
-                    if (docTypesToIgnore.Any(i => i == alias)) {continue;}
+                    if (docTypesToIgnore.Any(i => i == alias)) { continue; }
 
                     var childDocTypes = doc
                         .Root
@@ -157,7 +159,7 @@ namespace uSyncScrapper
                         .ToList();
                     docType.Properties = allProperties;
 
-                    ComputeNestedContentMaxItems(dataTypeDocuments, allProperties);
+                    ComputeNestedContentProperties(dataTypeDocuments, allProperties);
                     ComputeTreePickerMaxItems(dataTypeDocuments, allProperties);
 
                     if (!docType.Properties.Any()) { continue; }
@@ -190,6 +192,24 @@ namespace uSyncScrapper
                     }
                 }
                 docType.ChildDocTypes = childDocTypesNames;
+            }
+
+            // fill nested content properties
+            foreach (var docType in docTypes)
+            {
+                foreach (var prop in docType.Properties)
+                {
+                    if (prop.NestedContentDocTypes != null && prop.NestedContentDocTypes.Any())
+                    {
+                        var nestedContentList = new List<NestedContentDocType>();
+                        foreach (var nestedContentDocType in prop.NestedContentDocTypes)
+                        {
+                            nestedContentDocType.Properties = docTypes.First(i => i.Alias == nestedContentDocType.Alias).Properties.ToList();
+                            nestedContentList.Add(nestedContentDocType);
+                        }
+                        prop.NestedContentDocTypes = nestedContentList;
+                    }
+                }
             }
 
             return docTypes;
@@ -260,7 +280,7 @@ namespace uSyncScrapper
             return properties;
         }
 
-        private void ComputeNestedContentMaxItems(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
+        private void ComputeNestedContentProperties(List<XDocument> dataTypeDocuments, List<DocumentTypeProperty> properties)
         {
             var nestedContentProperties = properties
                                     .Where(i => i.Type == "Umbraco.NestedContent");
@@ -273,6 +293,7 @@ namespace uSyncScrapper
                     .Value == prop.Definition).FirstOrDefault();
                 if (datatype != null)
                 {
+                    //find max items
                     var maxItems = datatype
                         .Root
                         .Element("PreValues")
@@ -282,6 +303,16 @@ namespace uSyncScrapper
                     var maxItemsDefault = 0;
                     int.TryParse(maxItems, out maxItemsDefault);
                     prop.MaxItems = maxItemsDefault;
+
+                    //find available contentTypes for this nested content property
+                    var contentTypesString = datatype
+                        .Root
+                        .Element("PreValues")
+                        .Elements("PreValue")
+                        .FirstOrDefault(i => (string)i.Attribute("Alias") == "contentTypes")
+                        .Value;
+                    var deserializedContentTypes = JsonConvert.DeserializeObject<IEnumerable<ContentType>>(contentTypesString);
+                    prop.NestedContentDocTypes = deserializedContentTypes.Select(i => new NestedContentDocType { Alias = i.ncAlias, Name = i.nameTemplate });
                 }
             }
         }

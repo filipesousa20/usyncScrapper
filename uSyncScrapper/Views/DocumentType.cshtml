@@ -1,5 +1,12 @@
 ﻿@model uSyncScrapper.Models.DocumentType
 @using uSyncScrapper.Models
+@using uSyncScrapper.Extensions
+
+@{
+    var groupedProperties = from p in Model.Properties
+                            group p by p.Tab into g
+                            select new TabGroupedProperties { Tab = g.Key, Properties = g.ToList() };
+}
 
 <h3><a name="@Model.Name">@Model.Name</a> <span class="grey">doctype and template</span></h3>
 <p>@Model.Description <a href="http://www.example.com">Example here</a>.</p>
@@ -33,34 +40,56 @@
 </ul>
 
 <h4>Properties:</h4>
-<p>The following are the doctype properties grouped by their respective tab.</p>
+
 <ul>
-    @{
-        var groupedProperties = from p in Model.Properties
-                                 group p by p.Tab into g
-                                 select new TabGroupedProperties { Tab = g.Key, Properties = g.ToList() };
-
-        foreach (var gp in groupedProperties)
-        {
-            <li class="doctype-tab">
-                <span>@gp.Tab</span> tab:
-                <ul>
-                    @foreach (var item in gp.Properties)
+    @foreach (var gp in groupedProperties)
+    {
+        <li class="doctype-tab">
+            <span>@gp.Tab</span> tab:
+            <ul>
+                @foreach (var item in gp.Properties)
+                {
+                    string text = item.Text;
+                    text = text.TrimEnd('.') + (string.IsNullOrEmpty(text) ? "" : ".");
+                    var maxItemsText = item.Type == "Umbraco.NestedContent" || item.Type.StartsWith("Umbraco.MultiNodeTreePicker") ?
+                    (item.MaxItems > 0 ?
+                    string.Format("At most {0} '{1}' can be added.", item.MaxItems, item.Name) :
+                    "There is no limit on the number of items that can be added.")
+                    : "";
+                    var hasNestedContentDocTypes = item.NestedContentDocTypes != null && item.NestedContentDocTypes.Any();
+                    <li>
+                        <span class="property-title">@item.Name:</span> @text @maxItemsText
+                        @if (hasNestedContentDocTypes)
+                        {
+                            <text>The elements can be of type:</text>
+                        }
+                    </li>
+                    if (hasNestedContentDocTypes)
                     {
-                        string text = item.Text;
-                        text = text.TrimEnd('.') + (string.IsNullOrEmpty(text) ? "" : ".");
-                        var maxItemsText = item.Type == "Umbraco.NestedContent" || item.Type.StartsWith("Umbraco.MultiNodeTreePicker") ?
-                        (item.MaxItems > 0 ?
-                        string.Format("At most {0} '{1}' can be added.", item.MaxItems, item.Name) :
-                        "There is no limit on the number of items that can be added.")
-                        : "";
-
-                        <li>
-                            <span class="property-title">@item.Name:</span> @text @maxItemsText
-                        </li>
+                        <ul>
+                            @foreach (var dt in item.NestedContentDocTypes)
+                            {
+                                var alias = dt.Alias.SplitCamelCase();
+                                <li>
+                                    <span class="property-title">@alias</span> has the following properties:
+                                    @if (dt.Properties != null && dt.Properties.Any())
+                                    {
+                                        
+                                        <ul>
+                                            @foreach (var p in dt.Properties)
+                                            {
+                                                <li>
+                                                    <span class="property-title">@p.Name</span>: @p.Text
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                            }
+                        </ul>
                     }
-                </ul>
-            </li>
-        }
+                }
+            </ul>
+        </li>
     }
 </ul>
