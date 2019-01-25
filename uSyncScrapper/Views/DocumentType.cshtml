@@ -69,7 +69,7 @@
                         <ul>
                             @foreach (var dt in item.NestedContentDocTypes)
                             {
-                                var alias = dt.Alias.SplitCamelCase();
+                                var alias = dt.Alias.SplitCamelCase().FirstCharToUpper();
                                 <li>
                                     <span class="property-title">@alias</span> has the following properties:
                                     @if (dt.Properties != null && dt.Properties.Any())

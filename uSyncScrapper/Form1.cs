@@ -142,6 +142,12 @@ namespace uSyncScrapper
                         .Value;
                     docType.Description = description;
 
+                    docType.Folder = doc
+                        .Root
+                        .Element("Info")
+                        .Element("Folder")?
+                        .Value;
+
                     var compositionsDocuments = GetCompositions(allCompositionsDocuments, doc);
 
                     var allTabs = new List<Tab>();
@@ -212,7 +218,7 @@ namespace uSyncScrapper
                 }
             }
 
-            return docTypes;
+            return docTypes.Where(i => !i.Folder.Contains("nested", StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         private IEnumerable<Tab> GetCompositionsTabs(IEnumerable<XDocument> compositions)
