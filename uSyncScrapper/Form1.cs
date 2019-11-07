@@ -210,7 +210,7 @@ namespace uSyncScrapper
                         var nestedContentList = new List<NestedContentDocType>();
                         foreach (var nestedContentDocType in prop.NestedContentDocTypes)
                         {
-                            nestedContentDocType.Properties = docTypes.First(i => i.Alias == nestedContentDocType.Alias).Properties.ToList();
+                            nestedContentDocType.Properties = docTypes.FirstOrDefault(i => i.Alias == nestedContentDocType.Alias)?.Properties.ToList();
                             nestedContentList.Add(nestedContentDocType);
                         }
                         prop.NestedContentDocTypes = nestedContentList;
